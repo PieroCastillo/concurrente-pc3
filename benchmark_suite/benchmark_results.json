@@ -1,0 +1,46 @@
+[
+    {
+        "modalidad": "1. Secuencial (1 proceso, 1 hilo)",
+        "transacciones": 100,
+        "hilos_workers": 1,
+        "tiempo_total_seg": 2.569,
+        "throughput_tps": 38.93,
+        "latencia_promedio_ms": 23.69,
+        "latencia_p95_ms": 29.47,
+        "errores": 0,
+        "tasa_error_pct": 0.0
+    },
+    {
+        "modalidad": "2. Paralelo (N n\u00facleos, H hilos)",
+        "transacciones": 200,
+        "hilos_workers": 8,
+        "tiempo_total_seg": 2.404,
+        "throughput_tps": 83.21,
+        "latencia_promedio_ms": 92.77,
+        "latencia_p95_ms": 109.93,
+        "errores": 0,
+        "tasa_error_pct": 0.0
+    },
+    {
+        "modalidad": "3. Distribuido (M nodos coordinados)",
+        "transacciones": 200,
+        "hilos_workers": 3,
+        "tiempo_total_seg": 2.376,
+        "throughput_tps": 84.16,
+        "latencia_promedio_ms": 32.84,
+        "latencia_p95_ms": 37.85,
+        "errores": 0,
+        "tasa_error_pct": 0.0
+    },
+    {
+        "modalidad": "4. Paralelo Distribuido (M nodos x H hilos - SATURACION)",
+        "transacciones": 1000,
+        "hilos_workers": 20,
+        "tiempo_total_seg": 12.259,
+        "throughput_tps": 81.57,
+        "latencia_promedio_ms": 242.34,
+        "latencia_p95_ms": 291.42,
+        "errores": 0,
+        "tasa_error_pct": 0.0
+    }
+]

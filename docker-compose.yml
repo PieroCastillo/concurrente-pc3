@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  # Broker de Mensajería Central
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq_middleware
+    hostname: rabbitmq-broker
+    ports:
+      - "5672:5672"     # Puerto AMQP
+      - "15672:15672"   # Panel Web de Gestión
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      dist_net:
+        ipv4_address: 172.28.0.10
+
+  # Base de Datos 1: PostgreSQL (Nodo BD1 - Diagnósticos)
+  postgres_bd1:
+    image: postgres:15-alpine
+    container_name: postgres_bd1
+    hostname: nodo-bd1-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: bd1_diagnosticos
+      POSTGRES_USER: admin_pg
+      POSTGRES_PASSWORD: SecretPassword123!
+    volumes:
+      - ./database_scripts/bd1_postgres.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      dist_net:
+        ipv4_address: 172.28.0.20
+
+  # Base de Datos 2: MariaDB (Nodo BD2 - Validaciones & Clientes)
+  mariadb_bd2:
+    image: mariadb:10.11
+    container_name: mariadb_bd2
+    hostname: nodo-bd2-mariadb
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: bd2_validacion
+      MYSQL_USER: admin_maria
+      MYSQL_PASSWORD: SecretPassword123!
+      MYSQL_ROOT_PASSWORD: RootPassword123!
+    volumes:
+      - ./database_scripts/bd2_mariadb.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      dist_net:
+        ipv4_address: 172.28.0.30
+
+  # Nodo 3 Debian: Worker C# BD2 en Sistema Operativo Debian (Heterogeneidad SO3)
+  debian_node3_csharp:
+    image: mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim
+    container_name: debian_node3_csharp
+    hostname: nodo-debian-csharp
+    working_dir: /app
+    volumes:
+      - ./worker_csharp_bd2:/app
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      MARIADB_HOST: mariadb_bd2
+      MARIADB_DB: bd2_validacion
+      MARIADB_USER: admin_maria
+      MARIADB_PASS: SecretPassword123!
+    command: bash -c "dotnet run"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      dist_net:
+        ipv4_address: 172.28.0.40
+
+networks:
+  dist_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
